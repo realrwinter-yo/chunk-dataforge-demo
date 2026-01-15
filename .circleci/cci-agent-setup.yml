@@ -1,5 +1,10 @@
 version: 2.1
 
+workflows:
+  main:
+    jobs:
+      - cci-agent-setup
+
 jobs:
   cci-agent-setup:
     docker:
@@ -12,8 +17,3 @@ jobs:
       - run:
           name: Verify setup
           command: node --version && npm --version
-
-workflows:
-  cci-agent-setup:
-    jobs:
-      - cci-agent-setup
