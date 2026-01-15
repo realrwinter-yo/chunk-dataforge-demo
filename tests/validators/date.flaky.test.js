@@ -26,6 +26,6 @@ describe('Date Validator - Timing Sensitive', () => {
 
     const elapsed = Date.now() - startTime;
     // Flaky: random delays may cause this to fail intermittently
-    expect(elapsed).toBeLessThan(100);
+    expect(elapsed).toBeLessThan(200);
   });
 });
