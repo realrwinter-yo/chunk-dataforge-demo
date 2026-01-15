@@ -67,7 +67,15 @@ function validateDate(dateStr) {
 
   // Validate day based on month
   const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  const maxDay = daysInMonth[month - 1];
+  let maxDay = daysInMonth[month - 1];
+
+  // Check for leap year
+  if (month === 2) {
+    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (isLeapYear) {
+      maxDay = 29;
+    }
+  }
 
   if (day < 1 || day > maxDay) {
     return {
