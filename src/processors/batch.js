@@ -1,4 +1,34 @@
 /**
+ * Executes a transform function and awaits if necessary
+ * @param {Function} transform - Transform function
+ * @param {*} item - Item to transform
+ * @returns {Promise<*>} Transformed result
+ */
+async function executeTransform(transform, item) {
+  const result = transform(item);
+  return result instanceof Promise ? await result : result;
+}
+
+/**
+ * Reports progress if callback is provided
+ * @param {Function|null} onProgress - Progress callback
+ * @param {number} processed - Items processed
+ * @param {number} total - Total items
+ * @param {number} batchSize - Batch size for reporting
+ */
+function reportProgress(onProgress, processed, total, batchSize) {
+  if (!onProgress) return;
+
+  if (processed % batchSize === 0 || processed === total) {
+    onProgress({
+      processed,
+      total,
+      percentage: Math.round((processed / total) * 100)
+    });
+  }
+}
+
+/**
  * Processes items in batches with error handling
  * @param {Array} items - Items to process
  * @param {Function} transform - Transform function
@@ -6,59 +36,32 @@
  * @returns {Promise<Object>} Processing result
  */
 async function processBatch(items, transform, options = {}) {
-  if (!items) {
-    throw new Error('Items array is required');
-  }
-
-  if (!Array.isArray(items)) {
+  if (!items || !Array.isArray(items)) {
     throw new Error('Items must be an array');
   }
 
-  const batchSize = options.batchSize || 10;
-  const onProgress = options.onProgress || null;
-
+  const { batchSize = 10, onProgress = null } = options;
   const successful = [];
   const failed = [];
-  let processed = 0;
 
   for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-
     try {
-      let result;
-      if (transform.constructor.name === 'AsyncFunction') {
-        result = await transform(item);
-      } else {
-        result = transform(item);
-        if (result instanceof Promise) {
-          result = await result;
-        }
-      }
+      const result = await executeTransform(transform, items[i]);
       successful.push(result);
     } catch (error) {
       failed.push({
-        item: item,
+        item: items[i],
         error: error.message,
         index: i
       });
     }
 
-    processed++;
-
-    if (onProgress) {
-      if (processed % batchSize === 0 || processed === items.length) {
-        onProgress({
-          processed: processed,
-          total: items.length,
-          percentage: Math.round((processed / items.length) * 100)
-        });
-      }
-    }
+    reportProgress(onProgress, i + 1, items.length, batchSize);
   }
 
   return {
-    successful: successful,
-    failed: failed,
+    successful,
+    failed,
     stats: {
       total: items.length,
       succeeded: successful.length,
