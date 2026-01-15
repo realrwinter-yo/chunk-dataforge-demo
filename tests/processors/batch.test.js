@@ -97,8 +97,25 @@ describe('Batch Processor', () => {
       expect(result.stats.total).toBe(0);
     });
 
-    test('throws error for invalid input', async () => {
-      await expect(processBatch(null, (x) => x)).rejects.toThrow();
+    test('throws error for null input', async () => {
+      await expect(processBatch(null, (x) => x)).rejects.toThrow('Items array is required');
+    });
+
+    test('throws error for non-array input', async () => {
+      await expect(processBatch('not an array', (x) => x)).rejects.toThrow('Items must be an array');
+    });
+
+    test('throws error for object input', async () => {
+      await expect(processBatch({ foo: 'bar' }, (x) => x)).rejects.toThrow('Items must be an array');
+    });
+
+    test('handles promise-returning non-async transform', async () => {
+      const items = [1, 2, 3];
+      const transform = (item) => Promise.resolve(item * 3);
+
+      const result = await processBatch(items, transform);
+
+      expect(result.successful).toEqual([3, 6, 9]);
     });
   });
 });

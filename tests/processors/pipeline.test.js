@@ -91,4 +91,73 @@ describe('Pipeline Processor', () => {
       expect(typeof result.executionTime).toBe('number');
     });
   });
+
+  describe('validation', () => {
+    test('throws error when step name is missing', () => {
+      const pipeline = createPipeline();
+
+      expect(() => pipeline.addStep('', () => {})).toThrow('Step name is required');
+    });
+
+    test('throws error when step function is missing', () => {
+      const pipeline = createPipeline();
+
+      expect(() => pipeline.addStep('test')).toThrow('Step function is required');
+    });
+
+    test('throws error when step is not a function', () => {
+      const pipeline = createPipeline();
+
+      expect(() => pipeline.addStep('test', 'not a function')).toThrow('Step must be a function');
+    });
+  });
+
+  describe('getSteps', () => {
+    test('returns list of step names', () => {
+      const pipeline = createPipeline()
+        .addStep('first', x => x)
+        .addStep('second', x => x)
+        .addStep('third', x => x);
+
+      const steps = pipeline.getSteps();
+
+      expect(steps).toEqual(['first', 'second', 'third']);
+    });
+  });
+
+  describe('promise handling', () => {
+    test('handles promise returned from non-async function', async () => {
+      const pipeline = createPipeline()
+        .addStep('promiseStep', (x) => {
+          return Promise.resolve(x * 5);
+        });
+
+      const result = await pipeline.execute(3);
+
+      expect(result.success).toBe(true);
+      expect(result.output).toBe(15);
+    });
+
+    test('handles null result from step', async () => {
+      const pipeline = createPipeline()
+        .addStep('returnNull', () => null)
+        .addStep('useNull', (x) => x === null ? 'was null' : 'not null');
+
+      const result = await pipeline.execute(5);
+
+      expect(result.success).toBe(true);
+      expect(result.output).toBe('was null');
+    });
+
+    test('handles undefined result from step', async () => {
+      const pipeline = createPipeline()
+        .addStep('returnUndefined', () => undefined)
+        .addStep('useUndefined', (x) => x === undefined ? 'was undefined' : 'not undefined');
+
+      const result = await pipeline.execute(5);
+
+      expect(result.success).toBe(true);
+      expect(result.output).toBe('was undefined');
+    });
+  });
 });

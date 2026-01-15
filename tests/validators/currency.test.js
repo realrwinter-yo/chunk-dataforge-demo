@@ -59,5 +59,29 @@ describe('Currency Validator', () => {
       const result = validateCurrency('');
       expect(result.valid).toBe(false);
     });
+
+    test('rejects undefined', () => {
+      const result = validateCurrency(undefined);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Currency value is required');
+    });
+
+    test('rejects null', () => {
+      const result = validateCurrency(null);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Currency value is required');
+    });
+  });
+
+  describe('formatting', () => {
+    test('formats values >= 1000 with commas', () => {
+      const result = validateCurrency('1500.75');
+      expect(result.formatted).toBe('$1,500.75');
+    });
+
+    test('formats values < 1000 without commas', () => {
+      const result = validateCurrency('999.99');
+      expect(result.formatted).toBe('$999.99');
+    });
   });
 });
