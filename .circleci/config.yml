@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  install:
+  build:
     docker:
       - image: cimg/node:20.11
     steps:
@@ -33,10 +33,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Run tests
+          name: Run unit tests
           command: npm test
 
-  test-coverage:
+  coverage:
     docker:
       - image: cimg/node:20.11
     steps:
@@ -51,16 +51,15 @@ jobs:
           destination: coverage-report
 
 workflows:
-  version: 2
-  build-and-test:
+  ci:
     jobs:
-      - install
+      - build
       - lint:
           requires:
-            - install
+            - build
       - test:
           requires:
             - lint
-      - test-coverage:
+      - coverage:
           requires:
             - test
