@@ -1,0 +1,22 @@
+version: 2.1
+
+jobs:
+  cci-agent-setup:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify setup
+          command: |
+            echo "DataForge environment ready"
+            node --version
+            npm --version
+
+workflows:
+  agent-setup:
+    jobs:
+      - cci-agent-setup

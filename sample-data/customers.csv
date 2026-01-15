@@ -1,0 +1,6 @@
+name,email,phone,signup_date,balance
+John Smith,john.smith@example.com,555-123-4567,2024-01-15,1500.00
+Jane Doe,JANE.DOE@EXAMPLE.COM,(555) 234-5678,01/20/2024,2750.50
+Bob Wilson,bob.wilson@example.com,555.345.6789,15.02.2024,500.00
+Alice Brown,  alice.brown@example.com  ,555-456-7890,2024-03-01,3200.75
+Charlie Davis,charlie@example.com,555-567-8901,2024-03-15,0.00

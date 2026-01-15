@@ -1,0 +1,66 @@
+version: 2.1
+
+jobs:
+  install:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+
+  lint:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run linter
+          command: npm run lint
+
+  test:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run tests
+          command: npm test
+
+  test-coverage:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run tests with coverage
+          command: npm run test:coverage
+      - store_artifacts:
+          path: coverage
+          destination: coverage-report
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - test:
+          requires:
+            - lint
+      - test-coverage:
+          requires:
+            - test
