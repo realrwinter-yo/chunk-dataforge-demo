@@ -11,10 +11,7 @@ jobs:
           command: npm install
       - run:
           name: Verify setup
-          command: |
-            echo "DataForge environment ready"
-            node --version
-            npm --version
+          command: node --version && npm --version
 
 workflows:
   setup:
