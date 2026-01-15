@@ -1,67 +1,72 @@
 /**
+ * Normalizes a string value by trimming and normalizing whitespace
+ * @param {string} str - String to normalize
+ * @param {string} key - Property key for case transformation
+ * @param {Array<string>} lowercase - Keys to lowercase
+ * @param {Array<string>} uppercase - Keys to uppercase
+ * @returns {string} Normalized string
+ */
+function normalizeString(str, key, lowercase, uppercase) {
+  let normalized = str.trim().replace(/\s+/g, ' ');
+
+  if (lowercase.includes(key)) {
+    normalized = normalized.toLowerCase();
+  }
+  if (uppercase.includes(key)) {
+    normalized = normalized.toUpperCase();
+  }
+
+  return normalized;
+}
+
+/**
+ * Creates nested options for recursive normalization
+ * @param {string} key - Parent key
+ * @param {Array<string>} lowercase - Lowercase fields
+ * @param {Array<string>} uppercase - Uppercase fields
+ * @returns {Object} Nested options
+ */
+function createNestedOptions(key, lowercase, uppercase) {
+  const prefix = key + '.';
+  return {
+    lowercase: lowercase.filter(f => f.startsWith(prefix)).map(f => f.substring(prefix.length)),
+    uppercase: uppercase.filter(f => f.startsWith(prefix)).map(f => f.substring(prefix.length))
+  };
+}
+
+/**
  * Normalizes data by trimming strings and applying case transformations
  * @param {*} data - The data to normalize
  * @param {Object} options - Normalization options
  * @returns {*} Normalized data
  */
 function normalizeData(data, options = {}) {
-  if (data === null) {
-    return null;
+  if (data == null) {
+    return data;
   }
 
-  if (data === undefined) {
-    return undefined;
-  }
+  const { lowercase = [], uppercase = [] } = options;
 
-  const lowercase = options.lowercase || [];
-  const uppercase = options.uppercase || [];
-
-  // Handle arrays
   if (Array.isArray(data)) {
-    const result = [];
-    for (let i = 0; i < data.length; i++) {
-      result.push(normalizeData(data[i], options));
-    }
-    return result;
+    return data.map(item => normalizeData(item, options));
   }
 
-  // Handle objects
   if (typeof data === 'object') {
-    const result = {};
-    const keys = Object.keys(data);
-
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
+    return Object.keys(data).reduce((result, key) => {
       let value = data[key];
 
-      // Recursively normalize nested objects
       if (typeof value === 'object' && value !== null) {
-        // Pass nested options
-        const nestedOptions = {
-          lowercase: lowercase.filter(f => f.startsWith(key + '.')).map(f => f.substring(key.length + 1)),
-          uppercase: uppercase.filter(f => f.startsWith(key + '.')).map(f => f.substring(key.length + 1))
-        };
+        const nestedOptions = createNestedOptions(key, lowercase, uppercase);
         value = normalizeData(value, nestedOptions);
       } else if (typeof value === 'string') {
-        // Trim and normalize whitespace
-        value = value.trim().replace(/\s+/g, ' ');
-
-        // Apply case transformations
-        if (lowercase.includes(key)) {
-          value = value.toLowerCase();
-        }
-        if (uppercase.includes(key)) {
-          value = value.toUpperCase();
-        }
+        value = normalizeString(value, key, lowercase, uppercase);
       }
 
       result[key] = value;
-    }
-
-    return result;
+      return result;
+    }, {});
   }
 
-  // Return primitives as-is
   return data;
 }
 

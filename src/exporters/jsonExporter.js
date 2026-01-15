@@ -1,52 +1,73 @@
 /**
- * Exports data to JSON format with various options
+ * Filters empty values from an array
+ * @param {Array} arr - Array to filter
+ * @returns {Array} Filtered array
  */
+function filterEmptyArray(arr) {
+  return arr.filter(item => {
+    if (item == null) return false;
+    if (typeof item === 'object' && Object.keys(item).length === 0) return false;
+    return true;
+  });
+}
 
+/**
+ * Filters empty values from an object
+ * @param {Object} obj - Object to filter
+ * @returns {Object} Filtered object
+ */
+function filterEmptyObject(obj) {
+  return Object.keys(obj).reduce((result, key) => {
+    const value = obj[key];
+    if (value != null && value !== '') {
+      result[key] = value;
+    }
+    return result;
+  }, {});
+}
+
+/**
+ * Creates metadata for export
+ * @param {*} data - Exported data
+ * @returns {Object} Metadata object
+ */
+function createMetadata(data) {
+  return {
+    exportedAt: new Date().toISOString(),
+    recordCount: Array.isArray(data) ? data.length : 1,
+    format: 'json'
+  };
+}
+
+/**
+ * Exports data to JSON format with various options
+ * @param {*} data - Data to export
+ * @param {Object} options - Export options
+ * @returns {string} JSON string
+ */
 function exportToJson(data, options = {}) {
-  if (data === null || data === undefined) {
+  if (data == null) {
     throw new Error('Data is required for export');
   }
 
-  const pretty = options.pretty !== false;
-  const includeMetadata = options.includeMetadata || false;
-  const filterEmpty = options.filterEmpty || false;
-
+  const { pretty = true, includeMetadata = false, filterEmpty = false } = options;
   let processedData = data;
 
-  if (filterEmpty && Array.isArray(data)) {
-    processedData = data.filter(item => {
-      if (item === null || item === undefined) return false;
-      if (typeof item === 'object' && Object.keys(item).length === 0) return false;
-      return true;
-    });
-  }
-
-  if (filterEmpty && typeof data === 'object' && !Array.isArray(data)) {
-    processedData = {};
-    for (const key in data) {
-      if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
-        processedData[key] = data[key];
-      }
+  if (filterEmpty) {
+    if (Array.isArray(data)) {
+      processedData = filterEmptyArray(data);
+    } else if (typeof data === 'object') {
+      processedData = filterEmptyObject(data);
     }
   }
 
-  const output = {
-    data: processedData
-  };
+  const output = { data: processedData };
 
   if (includeMetadata) {
-    output.metadata = {
-      exportedAt: new Date().toISOString(),
-      recordCount: Array.isArray(processedData) ? processedData.length : 1,
-      format: 'json'
-    };
+    output.metadata = createMetadata(processedData);
   }
 
-  if (pretty) {
-    return JSON.stringify(output, null, 2);
-  }
-
-  return JSON.stringify(output);
+  return JSON.stringify(output, null, pretty ? 2 : 0);
 }
 
 function exportToJsonLines(data) {
