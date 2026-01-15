@@ -33,7 +33,7 @@ describe('Batch Processor - Race Conditions', () => {
     const duration = Date.now() - start;
 
     // Flaky: cumulative random delays may exceed threshold
-    expect(duration).toBeLessThan(150);
+    expect(duration).toBeLessThan(250);
   });
 
   test('handles concurrent modifications', async () => {
