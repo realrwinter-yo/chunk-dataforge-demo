@@ -52,6 +52,24 @@ describe('Email Validator', () => {
       const result = validateEmail('');
       expect(result.valid).toBe(false);
     });
+
+    test('rejects null input', () => {
+      const result = validateEmail(null);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Email is required');
+    });
+
+    test('rejects undefined input', () => {
+      const result = validateEmail(undefined);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Email is required');
+    });
+
+    test('rejects non-string input', () => {
+      const result = validateEmail(123);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Email is required');
+    });
   });
 
   describe('normalization', () => {

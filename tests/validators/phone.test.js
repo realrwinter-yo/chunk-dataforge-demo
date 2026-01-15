@@ -56,5 +56,45 @@ describe('Phone Validator', () => {
       const result = validatePhone('');
       expect(result.valid).toBe(false);
     });
+
+    test('rejects null', () => {
+      const result = validatePhone(null);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Phone number is required');
+    });
+
+    test('rejects non-string input', () => {
+      const result = validatePhone(1234567890);
+      expect(result.valid).toBe(false);
+    });
+
+    test('rejects phone with only formatting characters', () => {
+      const result = validatePhone('---');
+      expect(result.valid).toBe(false);
+    });
+
+    test('rejects phone with invalid special characters', () => {
+      const result = validatePhone('5551234567#');
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Phone number contains invalid characters');
+    });
+
+    test('rejects undefined input', () => {
+      const result = validatePhone(undefined);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Phone number is required');
+    });
+  });
+
+  describe('formatting output', () => {
+    test('provides formatted output for valid phone', () => {
+      const result = validatePhone('5551234567');
+      expect(result.formatted).toBe('(555) 123-4567');
+    });
+
+    test('extracts digits correctly from formatted input', () => {
+      const result = validatePhone('(555) 123-4567');
+      expect(result.value).toBe('5551234567');
+    });
   });
 });

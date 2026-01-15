@@ -56,5 +56,39 @@ describe('Date Validator', () => {
       const result = validateDate('not-a-date');
       expect(result.valid).toBe(false);
     });
+
+    test('rejects null input', () => {
+      const result = validateDate(null);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Date is required');
+    });
+
+    test('rejects undefined input', () => {
+      const result = validateDate(undefined);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Date is required');
+    });
+
+    test('rejects non-string input', () => {
+      const result = validateDate(12345);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Date is required');
+    });
+  });
+
+  describe('normalization', () => {
+    test('trims whitespace from input', () => {
+      expect(validateDate('  2024-01-15  ')).toEqual({
+        valid: true,
+        value: '2024-01-15',
+        parsed: expect.any(Date)
+      });
+    });
+
+    test('handles whitespace-only string', () => {
+      const result = validateDate('   ');
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Date is required');
+    });
   });
 });
