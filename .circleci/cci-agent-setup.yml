@@ -14,6 +14,6 @@ jobs:
           command: node --version && npm --version
 
 workflows:
-  setup:
+  cci-agent-setup:
     jobs:
       - cci-agent-setup
