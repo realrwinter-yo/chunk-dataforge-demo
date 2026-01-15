@@ -23,5 +23,12 @@ module.exports = {
       outputName: 'junit.xml'
     }]
   ],
-  verbose: true
+  verbose: true,
+  maxWorkers: '50%',
+  cache: true,
+  cacheDirectory: '.jest-cache',
+  testTimeout: 5000,
+  clearMocks: true,
+  resetMocks: false,
+  restoreMocks: false
 };
