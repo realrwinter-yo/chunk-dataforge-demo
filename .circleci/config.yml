@@ -1,22 +1,56 @@
 version: 2.1
 
-jobs:
-  build:
+# Reusable executor for consistency and easier updates
+executors:
+  node-executor:
     docker:
       - image: cimg/node:20.11
+    resource_class: medium
+    working_directory: ~/project
+
+# Reusable commands
+commands:
+  restore_npm_cache:
+    description: "Restore npm dependencies from cache"
+    steps:
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+
+  save_npm_cache:
+    description: "Save npm dependencies to cache"
+    steps:
+      - save_cache:
+          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+            - ~/.npm
+
+jobs:
+  build:
+    executor: node-executor
     steps:
       - checkout
+      - restore_npm_cache
       - run:
           name: Install dependencies
-          command: npm install
+          command: |
+            if [ ! -d "node_modules" ]; then
+              npm ci
+            else
+              echo "Dependencies restored from cache"
+            fi
+      - save_npm_cache
       - persist_to_workspace:
           root: .
           paths:
             - node_modules
+            - package.json
+            - package-lock.json
 
   lint:
-    docker:
-      - image: cimg/node:20.11
+    executor: node-executor
     steps:
       - checkout
       - attach_workspace:
@@ -26,42 +60,49 @@ jobs:
           command: npm run lint
 
   test:
-    docker:
-      - image: cimg/node:20.11
+    executor: node-executor
+    parallelism: 1
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: Run unit tests
-          command: npm test
+          command: npm test -- --ci --maxWorkers=2
       - store_test_results:
           path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test-results
 
   coverage:
-    docker:
-      - image: cimg/node:20.11
+    executor: node-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: Run tests with coverage
-          command: npm run test:coverage
+          command: npm run test:coverage -- --ci --maxWorkers=2
       - store_artifacts:
           path: coverage
           destination: coverage-report
+      - store_test_results:
+          path: test-results
 
 workflows:
   ci:
     jobs:
       - build
+      # Run lint and test in parallel after build completes
       - lint:
           requires:
             - build
       - test:
           requires:
-            - lint
+            - build
+      # Only run coverage after both lint and test pass
       - coverage:
           requires:
+            - lint
             - test
