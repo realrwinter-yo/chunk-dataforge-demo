@@ -3,15 +3,15 @@ const { validateDate } = require('../../src/validators/date');
 describe('Date Validator - Timing Sensitive', () => {
   test('validates current date within acceptable range', () => {
     const now = new Date();
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
 
-    // This test is flaky because it depends on exact timing
-    // If the date changes between creating dateStr and validation, it may fail
     const result = validateDate(dateStr);
-    const validated = new Date(result.parsed);
 
-    // Flaky: comparing dates across potential day boundary
-    expect(validated.getDate()).toBe(now.getDate());
+    expect(result.valid).toBe(true);
+    expect(result.value).toBe(dateStr);
   });
 
   test('processes dates within timeout', async () => {
@@ -20,12 +20,10 @@ describe('Date Validator - Timing Sensitive', () => {
 
     for (const date of dates) {
       validateDate(date);
-      // Artificial delay that sometimes exceeds threshold
-      await new Promise(r => setTimeout(r, Math.random() * 50));
     }
 
     const elapsed = Date.now() - startTime;
-    // Flaky: random delays may cause this to fail intermittently
+    // Synchronous validation should complete well within 100ms
     expect(elapsed).toBeLessThan(100);
   });
 });

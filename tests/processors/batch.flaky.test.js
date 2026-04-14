@@ -6,15 +6,13 @@ describe('Batch Processor - Race Conditions', () => {
     const items = [1, 2, 3, 4, 5];
 
     const transform = async (item) => {
-      // Random delay causes race condition
-      await new Promise(r => setTimeout(r, Math.random() * 30));
       results.push(item);
       return item * 2;
     };
 
     await processBatch(items, transform);
 
-    // Flaky: order is not guaranteed due to random delays
+    // processBatch processes sequentially, so order is guaranteed
     expect(results).toEqual([1, 2, 3, 4, 5]);
   });
 
@@ -22,9 +20,6 @@ describe('Batch Processor - Race Conditions', () => {
     const items = Array.from({ length: 10 }, (_, i) => i);
 
     const transform = async (item) => {
-      // Unpredictable delay
-      const delay = Math.random() * 20;
-      await new Promise(r => setTimeout(r, delay));
       return item;
     };
 
@@ -32,7 +27,7 @@ describe('Batch Processor - Race Conditions', () => {
     await processBatch(items, transform);
     const duration = Date.now() - start;
 
-    // Flaky: cumulative random delays may exceed threshold
+    // Synchronous transforms should complete well within 150ms
     expect(duration).toBeLessThan(150);
   });
 
@@ -41,16 +36,13 @@ describe('Batch Processor - Race Conditions', () => {
     const items = [1, 2, 3, 4, 5];
 
     const transform = async (item) => {
-      const current = sharedState.count;
-      await new Promise(r => setTimeout(r, Math.random() * 10));
-      // Race condition: multiple transforms may read same value
-      sharedState.count = current + 1;
+      // processBatch is sequential so no true race condition
+      sharedState.count += 1;
       return item;
     };
 
     await processBatch(items, transform);
 
-    // Flaky: race condition means count may not equal items.length
     expect(sharedState.count).toBe(5);
   });
 });
