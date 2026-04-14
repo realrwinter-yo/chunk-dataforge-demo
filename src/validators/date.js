@@ -31,7 +31,7 @@ function validateDate(dateStr) {
   }
 
   // Try US format: MM/DD/YYYY
-  if (!year) {
+  if (year === undefined) {
     const usMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     if (usMatch) {
       month = parseInt(usMatch[1], 10);
@@ -41,7 +41,7 @@ function validateDate(dateStr) {
   }
 
   // Try European format: DD.MM.YYYY
-  if (!year) {
+  if (year === undefined) {
     const euMatch = trimmed.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
     if (euMatch) {
       day = parseInt(euMatch[1], 10);
@@ -50,7 +50,7 @@ function validateDate(dateStr) {
     }
   }
 
-  if (!year) {
+  if (year === undefined) {
     return {
       valid: false,
       error: 'Invalid date format'
@@ -66,7 +66,8 @@ function validateDate(dateStr) {
   }
 
   // Validate day based on month
-  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  const daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   const maxDay = daysInMonth[month - 1];
 
   if (day < 1 || day > maxDay) {

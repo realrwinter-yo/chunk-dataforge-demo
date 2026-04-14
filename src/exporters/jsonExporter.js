@@ -23,7 +23,7 @@ function exportToJson(data, options = {}) {
 
   if (filterEmpty && typeof data === 'object' && !Array.isArray(data)) {
     processedData = {};
-    for (const key in data) {
+    for (const key of Object.keys(data)) {
       if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
         processedData[key] = data[key];
       }
