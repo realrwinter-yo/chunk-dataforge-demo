@@ -1,7 +1,35 @@
 /**
- * Validates a date string in various formats
- * @param {string} dateStr - The date string to validate
- * @returns {Object} Validation result
+ * Validates a date string in one of three supported formats:
+ *
+ * | Format        | Example        |
+ * |---------------|----------------|
+ * | ISO 8601      | `YYYY-MM-DD`   |
+ * | US            | `MM/DD/YYYY`   |
+ * | European      | `DD.MM.YYYY`   |
+ *
+ * Month and day ranges are validated against their calendar maximums.
+ * Note that leap years are **not** accounted for — 29 Feb is always
+ * rejected because February's max is fixed at 28.
+ *
+ * @param {string} dateStr - The raw date string to validate.
+ * @returns {{ valid: true, value: string, parsed: Date } | { valid: false, error: string }}
+ *   On success:
+ *   - `value`  — normalised ISO 8601 string (`"YYYY-MM-DD"`)
+ *   - `parsed` — JavaScript `Date` object (local time, midnight)
+ *   On failure, `error` describes why validation failed.
+ *
+ * @example
+ * validateDate('2024-03-15');
+ * // { valid: true, value: '2024-03-15', parsed: Date }
+ *
+ * validateDate('03/15/2024');
+ * // { valid: true, value: '2024-03-15', parsed: Date }
+ *
+ * validateDate('15.03.2024');
+ * // { valid: true, value: '2024-03-15', parsed: Date }
+ *
+ * validateDate('2024-13-01');
+ * // { valid: false, error: 'Invalid month' }
  */
 function validateDate(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') {
