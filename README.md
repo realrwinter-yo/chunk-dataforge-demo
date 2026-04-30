@@ -29,6 +29,12 @@ const result = await dataforge.processBatch(items, transformFn);
 npm test
 ```
 
+## Documentation
+
+- [Validators](docs/validators.md)
+- [Transformers](docs/transformers.md)
+- [Processors](docs/processors.md)
+
 ## License
 
 MIT
