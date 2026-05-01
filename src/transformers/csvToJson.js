@@ -1,8 +1,32 @@
 /**
- * Converts CSV string to JSON array
- * @param {string} csv - The CSV string to convert
- * @param {Object} options - Conversion options
- * @returns {Array} Array of objects
+ * Converts a CSV string into an array of plain objects.
+ *
+ * The first line of the CSV is treated as the header row and becomes the
+ * keys of each resulting object. Subsequent lines are data rows. Blank
+ * lines are skipped. All keys and values are trimmed of surrounding
+ * whitespace. All values are returned as strings — callers must coerce
+ * to numbers, booleans, or other types as needed.
+ *
+ * Does not currently support quoted fields that span multiple lines or
+ * that contain the delimiter character.
+ *
+ * @param {string} csv - The CSV string to parse. Must be a non-null string.
+ * @param {Object} [options={}] - Optional parsing options.
+ * @param {string} [options.delimiter=','] - Character used to separate fields.
+ *   Override this for TSV or other delimited formats (e.g. `'\t'`).
+ * @returns {Object[]} Array of objects, one per data row. Returns `[]` for
+ *   empty input or a header-only CSV.
+ * @throws {Error} If `csv` is `null`, `undefined`, or not a string.
+ *
+ * @example
+ * csvToJson('name,age\nAlice,30\nBob,25');
+ * // [{ name: 'Alice', age: '30' }, { name: 'Bob', age: '25' }]
+ *
+ * csvToJson('a\tb\tc\n1\t2\t3', { delimiter: '\t' });
+ * // [{ a: '1', b: '2', c: '3' }]
+ *
+ * csvToJson('');
+ * // []
  */
 function csvToJson(csv, options = {}) {
   if (csv === null || csv === undefined) {

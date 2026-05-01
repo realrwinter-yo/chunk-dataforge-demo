@@ -1,8 +1,41 @@
 /**
- * Normalizes data by trimming strings and applying case transformations
- * @param {*} data - The data to normalize
- * @param {Object} options - Normalization options
- * @returns {*} Normalized data
+ * Recursively normalises data by trimming strings and applying optional
+ * case transformations to named fields.
+ *
+ * - **Strings** — trimmed and internal runs of whitespace collapsed to a
+ *   single space, then optionally lower- or upper-cased based on `options`.
+ * - **Arrays** — each element is normalised recursively with the same options.
+ * - **Objects** — each value is normalised recursively; for nested objects the
+ *   relevant field names must be dot-prefixed in `options.lowercase` /
+ *   `options.uppercase` (e.g. `"address.city"`).
+ * - **Primitives** (`null`, `undefined`, numbers, booleans) — returned as-is.
+ *
+ * The function does **not** mutate the original data; it returns a new
+ * structure with the same shape.
+ *
+ * @param {*} data - The value to normalise (object, array, primitive, or null).
+ * @param {Object} [options={}] - Normalisation options.
+ * @param {string[]} [options.lowercase=[]] - Field names whose string values
+ *   should be converted to lower case. Supports dot notation for nested
+ *   fields (e.g. `['email', 'address.country']`).
+ * @param {string[]} [options.uppercase=[]] - Field names whose string values
+ *   should be converted to upper case. Applied after `lowercase` if both
+ *   include the same key.
+ * @returns {*} A new normalised value with the same structural type as `data`.
+ *
+ * @example
+ * normalizeData({ name: '  Alice  ', email: 'ALICE@example.com' }, {
+ *   lowercase: ['email']
+ * });
+ * // { name: 'Alice', email: 'alice@example.com' }
+ *
+ * normalizeData([{ code: 'us' }, { code: 'gb' }], { uppercase: ['code'] });
+ * // [{ code: 'US' }, { code: 'GB' }]
+ *
+ * normalizeData({ address: { city: 'new york' } }, {
+ *   uppercase: ['address.city']
+ * });
+ * // { address: { city: 'NEW YORK' } }
  */
 function normalizeData(data, options = {}) {
   if (data === null) {

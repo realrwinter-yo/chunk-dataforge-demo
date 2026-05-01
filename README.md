@@ -34,6 +34,7 @@ npm test
 - [Validators](docs/validators.md)
 - [Transformers](docs/transformers.md)
 - [Processors](docs/processors.md)
+- [Exporters](docs/exporters.md)
 
 ## License
 

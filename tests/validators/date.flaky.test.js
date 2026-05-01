@@ -14,18 +14,15 @@ describe('Date Validator - Timing Sensitive', () => {
     expect(validated.getDate()).toBe(now.getDate());
   });
 
-  test('processes dates within timeout', async () => {
+  test('processes dates within timeout', () => {
     const dates = ['2024-01-15', '2024-06-20', '2024-12-31'];
     const startTime = Date.now();
 
     for (const date of dates) {
       validateDate(date);
-      // Artificial delay that sometimes exceeds threshold
-      await new Promise(r => setTimeout(r, Math.random() * 50));
     }
 
     const elapsed = Date.now() - startTime;
-    // Flaky: random delays may cause this to fail intermittently
     expect(elapsed).toBeLessThan(100);
   });
 });
